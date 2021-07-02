@@ -9,7 +9,7 @@ favoriteRouter
   .route('/')
   .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
   .get(cors.cors, authenticate.verifyUser, (req, res, next) => {
-    Favorite.findOne({ user: req.user._id })
+    Favorite.find({ user: req.user._id })
       .populate('user')
       .populate('campsites')
       .then((favorite) => {
@@ -39,9 +39,11 @@ favoriteRouter
         } else {
           Favorite.create({ user: req.user._id, campsites: req.body })
             .then((favorite) => {
-              res.statusCode = 200
-              res.setHeader('Content-Type', 'application/json')
-              res.json(favorite)
+              req.body.forEach((fav) => {
+                if (!favorite.campsites.includes(fav._id)) {
+                  favorite.campsites.push(fav._id)
+                }
+              })
             })
             .catch((err) => next(err))
         }
@@ -53,24 +55,24 @@ favoriteRouter
     res.end(`PUT operation not supported on /favorites`)
   })
   .delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
-    Favorite.findOne({ user: req.user._id })
-      .then((favorite) => {
-        if (favorite) {
-          favorite
-            .remove()
-            .then((favorite) => {
-              res.statusCode = 200
-              res.setHeader('Content-Type', 'application/json')
-              res.json(favorite)
-            })
-            .catch((err) => next(err))
-        } else {
-          res.statusCode = 200
-          res.setHeader('Content-Type', 'application/json')
-          res.json(favorite)
-        }
-      })
-      .catch((err) => next(err))
+     Favorite.findOneAndDelete({ user: req.user._id })
+       .then((favorite) => {
+         if (favorite) {
+           favorite
+             .remove()
+             .then((favorite) => {
+               res.statusCode = 200
+               res.setHeader('Content-Type', 'application/json')
+               res.json(favorite)
+             })
+             .catch((err) => next(err))
+         } else {
+           res.statusCode = 200
+           res.setHeader('Content-Type', 'application/json')
+           res.json(favorite)
+         }
+       })
+       .catch((err) => next(err))
   })
 
 favoriteRouter

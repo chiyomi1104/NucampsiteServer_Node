@@ -20,14 +20,9 @@ const partnerSchema = new Schema(
     description: {
       type: String,
       required: true,
-    }
-  },
-  {
-    timestamps: {
-      createdAt: 'created_at',
-      UpdatedAt: 'updated_at',
     },
-  }
+  },
+  { timestamps: true }
 )
 
 const Partner = mongoose.model('Partner', partnerSchema)
